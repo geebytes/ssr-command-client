@@ -1,8 +1,6 @@
 # The command client of ShadowsocksR based Python3
 
-在命令行下使用的一款ssr客户端(稳定版)
-
-**此版本为稳定版本，几乎不会更新，除非有bug，如果想尝试更加新的特性请移步至开发版[develop](https://github.com/TyrantLucifer/ssr-command-client/tree/develop)**
+在命令行下使用的一款ssr客户端(新特性尝鲜版)
 
 ## 特性
 
@@ -14,13 +12,26 @@
 - 支持测试端口是否被tcp阻断
 - 支持设置开机自启
 - 暂时不支持`ipv6`节点，默认解析节点时会进行屏蔽
+- 该版本将测试ping值的方式从python的ping3修改为fping，提高了ping测试的效率和时间，且更新节点列表时不再需要root权限，在这里特别感谢[qwqVictor](https://github.com/qwqVictor)给出的修改建议
+- 该版本支持打印节点信息二维码，由于终端输出二维码占字符太多，故输出的二维码十分大，需要缩小字体才能看全，或者打开保存在目录中的`qrcode.png`
 
-## 安装方式
+## 安装ssr-command-client
 
 ```shell
-git clone https://github.com/TyrantLucifer/ssr-command-client.git
+git clone -b develop https://github.com/TyrantLucifer/ssr-command-client.git
 cd ssr-command-client
 pip3 install -r requirement.txt
+```
+
+## 安装fping
+
+```shell
+# 如果你是Ubuntu用户
+(sudo) apt install fping -y
+
+# 如果你是Centos用户(如果以下命令安装不成功，请编译安装)
+(sudo) yum install epel-release -y
+(sudo) yum install fping -y
 ```
 
 ## 使用方法
@@ -35,7 +46,7 @@ OPTIONS
 -S --stop "stop ssr proxy" 停止ssr代理服务
 -p --port port "assign local port" 指定本地代理端口
 -c --config ssr_node_id "generate config json file" 生成指定节点json文件
--u --update "update ssr list" 更新ssr节点列表(需要sudo权限)
+-u --update "update ssr list" 更新ssr节点列表
 --fast-node "generate fast ssr config json file" 生成最快节点json文件
 --setting-url "set ssr subscribe url" 重置ssr订阅链接
 --setting-address "set ssr local address" 设置ssr本地代理地址
@@ -43,9 +54,10 @@ OPTIONS
 --remove-url "remove ssr subscribe url" 移除ssr订阅链接
 --list-url "display ssr subscribe url" 显示当前ssr订阅链接
 --list-address "display ssr local address" 显示当前ssr本地代理地址
---parse-url "parse ssr url" 解析ssr链接(需要sudo权限)
---add-ssr "add ssr node" 添加ssr节点(需要sudo权限)
---test-again ssr_node_id "test ssr node again" 重新测试节点延迟及端口状态(需要sudo权限)
+--parse-url "parse ssr url" 解析ssr链接
+--add-ssr "add ssr node" 添加ssr节点
+--test-again ssr_node_id "test ssr node again" 重新测试节点延迟及端口状态
+--print-qrcode ssr_node_id "print ssr node qrcode" 打印节点二维码
 --setting-pac-proxy "setting system pac proxy,only support Ubuntu Desktop" 设置系统代理模式为pac代理，注：仅支持Ubuntu桌面系统
 --setting-global-proxy "setting system global proxy,only support Ubuntu Desktop" 设置系统代理模式为全局代理，注：仅支持Ubuntu桌面系统
 --close-system-proxy "close system proxy,only support Ubuntu Desktop" 关闭系统代理，注：仅支持Ubuntu桌面系统
@@ -55,7 +67,7 @@ OPTIONS
 
 ## 效果展示
 
-- 输出ssr链接节点列表 python3 main.py -l，新版本的`ssr-command-client`更新列表需要`sudo`权限，如果以普通用户运行，请加`sudo`
+- 输出ssr链接节点列表 python3 main.py -l，~~新版本的`ssr-command-client`更新列表需要`sudo`权限，如果以普通用户运行，请加`sudo`~~，此版本不再需要`root`权限
 
 ![](https://cdn.jsdelivr.net/gh/TyrantLucifer/MyImageRepository/img/20200315024222.png)
 

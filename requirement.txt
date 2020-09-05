@@ -1,6 +1,6 @@
 requests
-ping3
 colorama
 shadowsocks
 prettytable
 genpac
+qrcode

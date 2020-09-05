@@ -7,7 +7,8 @@ import base64
 import zipfile
 import configparser
 import socket
-import ping3
+import qrcode
+import subprocess
 import re
 import os
 from prettytable import PrettyTable
@@ -95,6 +96,7 @@ def get_ssr_list(url):
 # 解析ssr url链接
 def analysis_ssr_url(ssr_url):
     try:
+        ssr_init_url = 'ssr://' + ssr_url
         ssr_url = base64decode(ssr_url)
     except:
         pass
@@ -128,6 +130,7 @@ def analysis_ssr_url(ssr_url):
             ssr_dict['ping'] = get_ping_speed(server, ssr_dict['remarks'])
             ssr_dict['port_status'] = get_port_status(server, int(port))
             ssr_dict['protocol'] = protocol
+            ssr_dict['ssr_url'] = ssr_init_url
             return ssr_dict
         else:
             color = colored()
@@ -173,7 +176,14 @@ def generate_ssr_display_table(ssr_info_dict_list):
 # 获取ssr节点ping值
 def get_ping_speed(server, remarks):
     color = colored()
-    ping_speed = ping3.ping(server, timeout=5, unit='ms')
+    result = subprocess.Popen(['/usr/bin/fping', '-Dae4', server], shell=False, stdout=subprocess.PIPE)
+    result.wait()
+    result = str(result.stdout.read(), encoding='utf-8')
+    try:
+        ping_speed = re.match(r'.*?\((.*?) ms.*?', result).group(1)
+        ping_speed = float(ping_speed)
+    except:
+        ping_speed = None
     if ping_speed:
         flag = color.green('√')
         ping_speed = format(ping_speed, '.3f')
@@ -278,3 +288,17 @@ def get_port_status(server, port):
         flag = "√"
     s.close()
     return flag
+
+# 打印节点二维码
+def print_qrcode(data):
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=3,
+        border=1,
+    );
+    qr.add_data(data)
+    qr.make(fit=True)
+    img = qr.make_image()
+    img.save('qrcode.png')
+    qr.print_ascii(tty=True, invert=True)
