@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # coding=utf-8
 import json
+import requests
 from utils import *
 
 config_dir, config_file_dir, lock_file_dir = get_config_dir()
@@ -29,13 +30,20 @@ else:
     SHADOWSOCKSR_PID_FILE_PATH = get_config_value('SHADOWSOCKSR_PID_FILE_PATH')
     SHADOWSOCKSR_LOG_FILE_PATH = get_config_value('SHADOWSOCKSR_LOG_FILE_PATH')
     NODE_CONFIG_PATH = get_config_value('NODE_CONFIG_PATH')
-def wirte_config(ssr_info_dict, port, node_id):
+
+def get_geo(server):
+    res = requests.get("http://ip-api.com/json/{}".format(server))
+    data = res.json()
+    return data["countryCode"]
+
+def wirte_config(ssr_info_dict,node_id, port):
     ssr_info_dict['local_address'] = LOCAL_ADDRESS 
     ssr_info_dict['timeout'] = TIMEOUT
     ssr_info_dict['workers'] = WORKERS
     ssr_info_dict['local_port'] = port
     ssr_info = json.dumps(ssr_info_dict)
-    path = os.path.join(NODE_CONFIG_PATH, "{}_{}_config.json".format(node_id, port))
+    geo = get_geo(ssr_info_dict["server"])
+    path = os.path.join(NODE_CONFIG_PATH, "{}_{}_{}_config.json".format(node_id, geo, port))
     with open(path, 'w') as file:
         file.write(ssr_info)
     print('config json file is update~~')
@@ -57,7 +65,7 @@ def generate_all_node_config_json(start_port=1080):
         ssr_info_dict_list = json.loads(json_str)
     else:
         ssr_info_dict_list = update_ssr_list_info()
-    for node, index in enumerate(ssr_info_dict_list):
+    for index, node in enumerate(ssr_info_dict_list):
         wirte_config(node, index, start_port)
         start_port = start_port + 1
 
