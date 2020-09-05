@@ -46,7 +46,7 @@ def wirte_config(ssr_info_dict,node_id, port):
     path = os.path.join(NODE_CONFIG_PATH, "{}_{}_{}_config.json".format(node_id, geo, port))
     with open(path, 'w') as file:
         file.write(ssr_info)
-    print('config json file is update~~')
+        print('wirte {} node {} config use {} port'.format(geo, node_id, port))
 
 def generate_config_json(id, port=1080):
     if os.path.exists(SERVER_JSON_FILE_PATH):
