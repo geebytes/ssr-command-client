@@ -231,6 +231,7 @@ def init_config_file():
     shadowsocksr_client_path = os.path.join(config_dir, 'shadowsocksr/shadowsocks/local.py')
     shadowsocksr_pid_file_path = os.path.join(config_dir, 'shadowsocksr.pid')
     shadowsocksr_log_file_path = os.path.join(config_dir, 'shadowsocksr.log')
+    home_dir = get_home_dir()
     cf = configparser.ConfigParser()
     cf.add_section('default')
     cf.set('default', 'subscribe_url', '')
@@ -242,6 +243,7 @@ def init_config_file():
     cf.set('default', 'shadowsocksr_client_path', shadowsocksr_client_path)
     cf.set('default', 'shadowsocksr_pid_file_path', shadowsocksr_pid_file_path)
     cf.set('default', 'shadowsocksr_log_file_path', shadowsocksr_log_file_path)
+    cf.set('default', 'node_config_path', os.path.join(home_dir,".etc","ssr"))
     with open(config_file_dir, 'w+') as file:
         cf.write(file)
     with open(lock_file_dir, 'w') as lock_file:
