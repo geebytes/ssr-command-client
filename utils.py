@@ -176,7 +176,7 @@ def generate_ssr_display_table(ssr_info_dict_list):
 # 获取ssr节点ping值
 def get_ping_speed(server, remarks):
     color = colored()
-    result = subprocess.Popen(['/usr/bin/fping', '-Dae4', server], shell=False, stdout=subprocess.PIPE)
+    result = subprocess.Popen(['/usr/bin/fping', '-Dae', server], shell=False, stdout=subprocess.PIPE)
     result.wait()
     result = str(result.stdout.read(), encoding='utf-8')
     try:
