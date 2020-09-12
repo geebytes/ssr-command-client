@@ -3,7 +3,7 @@
 import json
 import requests
 import os
-from SSRClient.utils import *
+from utils import *
 from shadowsocks import shell, daemon, eventloop, tcprelay, udprelay, asyncdns
 config_dir, config_file_dir, lock_file_dir = get_config_dir()
 print(lock_file_dir)
