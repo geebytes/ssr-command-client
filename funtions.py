@@ -2,9 +2,11 @@
 # coding=utf-8
 import json
 import requests
-from utils import *
-
+import os
+from SSRClient.utils import *
+from shadowsocks import shell, daemon, eventloop, tcprelay, udprelay, asyncdns
 config_dir, config_file_dir, lock_file_dir = get_config_dir()
+print(lock_file_dir)
 if os.path.exists(lock_file_dir):
     SUBSCRIBE_URL = get_config_value('SUBSCRIBE_URL')
     SERVER_JSON_FILE_PATH = get_config_value('SERVER_JSON_FILE_PATH')
@@ -42,11 +44,16 @@ def wirte_config(ssr_info_dict,node_id, port):
     ssr_info_dict['workers'] = WORKERS
     ssr_info_dict['local_port'] = port
     ssr_info = json.dumps(ssr_info_dict)
-    geo = get_geo(ssr_info_dict["server"])
-    path = os.path.join(NODE_CONFIG_PATH, "{}_{}_{}_config.json".format(node_id, geo, port))
+    # geo = get_geo(ssr_info_dict["server"])
+    path = os.path.join(NODE_CONFIG_PATH, "{}_{}_config.json".format(node_id, port))
     with open(path, 'w') as file:
         file.write(ssr_info)
-        print('wirte {} node {} config use {} port'.format(geo, node_id, port))
+        print('wirte {} node config.tpl use {} port'.format(node_id, port))
+        privoxy_config = {
+            "listen_address": "0.0.0.0:81{}".format(node_id),
+            "forward_socks5": "127.0.0.1:{}".format(port)
+        }
+        render_privoxy_config(node_id, privoxy_config)
 
 def generate_config_json(id, port=1080):
     if os.path.exists(SERVER_JSON_FILE_PATH):
@@ -108,7 +115,7 @@ def show_ssr_list():
     table = generate_ssr_display_table(ssr_info_dict_list)
     print(table)
 
-def start_ssr_proxy():
+def start_ssr_proxy(node_id):
     if os.path.exists(CONFIG_JSON_FILE_PATH):
         if os.path.exists(SHADOWSOCKSR_PID_FILE_PATH):
             print('Proxy is already start~~')
@@ -118,7 +125,7 @@ def start_ssr_proxy():
             os.system(cmd)
             print('Proxy is start~~')
     else:
-        print("Config json file is not exists,Please use the option -c to create config json file~~")
+        print("Config json file is not exists,Please use the option -c to create config.tpl json file~~")
 
 def stop_ssr_proxy():
     if os.path.exists(CONFIG_JSON_FILE_PATH):
@@ -136,11 +143,11 @@ def stop_ssr_proxy():
         else:
             print('Proxy is already stop~~')
     else:
-        print("Config json file is not exists,Please use the option -c to create config json file~~")
+        print("Config json file is not exists,Please use the option -c to create config.tpl json file~~")
 
 def display_version():
     color = colored()
-    version = color.yellow("ssr-command-client v1.3")
+    version = color.yellow("SSRClient v1.3")
     author = color.blue("Powered by TyrantLucifer~~")
     print(version)
     print(author)

@@ -2,7 +2,7 @@
 # coding=utf-8
 
 import argparse
-from funtions import *
+from SSRClient.funtions import *
 
 def get_parser():
     parser = argparse.ArgumentParser(description="The ssr command client based Python.")
@@ -11,11 +11,11 @@ def get_parser():
     parser.add_argument("-s", "--start", action="store_true", help="start ssr proxy")
     parser.add_argument("-S", "--stop", action="store_true", help="stop ssr proxy")
     parser.add_argument("-u", "--update", action="store_true", help="update ssr list")
-    parser.add_argument("-c", "--config", metavar="ssr_node_id", type=int, help="generate ssr config json")
+    parser.add_argument("-c", "--config", metavar="ssr_node_id", type=int, help="generate ssr config.tpl json")
 
-    parser.add_argument("-C", "--all-config", action="store_true",  help="generate all node ssr config json")
+    parser.add_argument("-C", "--all-config", action="store_true",  help="generate all node ssr config.tpl json")
     parser.add_argument("-v", "--version", action="store_true", help="display version")
-    parser.add_argument("--fast-node", action="store_true", help="generate fast ssr config json")
+    parser.add_argument("--fast-node", action="store_true", help="generate fast ssr config.tpl json")
     parser.add_argument("--setting-url", metavar="ssr_subscribe_url", help="setting ssr subscribe url")
     parser.add_argument("--setting-address", metavar="ssr_local_address", help="setting ssr local address")
     parser.add_argument("--list-url", action="store_true", help="list ssr subscribe url")

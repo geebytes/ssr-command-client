@@ -9,10 +9,15 @@ import configparser
 import socket
 import qrcode
 import subprocess
+from shutil import copyfile
 import re
+import sys
 import os
+from shadowsocks import shell, daemon, eventloop, tcprelay, udprelay, asyncdns
+
 from prettytable import PrettyTable
 from colorama import init, Fore, Back, Style
+from jinja2 import Environment, FileSystemLoader
 
 class DrawTable(object):
     '''工具类，打印表格格式化'''
@@ -60,6 +65,60 @@ class colored(object):
     def blue(self,s):
         return Fore.LIGHTBLUE_EX + s + Fore.RESET
 
+def render_privoxy_config(node_id, config):
+    path = os.path.dirname(os.path.abspath(__file__))
+    template_path = os.path.join(path, "templates")
+    config_dir, config_file_dir, lock_file_dir = get_config_dir()
+    privoxy_config_dir = os.path.join(config_dir, "privoxy_configs")
+    os.makedirs(privoxy_config_dir, exist_ok=True)
+    dst_config = os.path.join(privoxy_config_dir, "{}_config".format(node_id))
+    tpl_source = os.path.join(path, "templates", "config.tpl")
+    env = Environment(loader=FileSystemLoader(os.path.join(path, "templates")))
+    if os.path.exists(tpl_source):
+        tpl = env.get_template("config.tpl")
+    output = tpl.render(**config)
+    with open(dst_config, "w") as f:
+        f.write(output)
+
+def get_ssr_config(is_local, config_path, config={}):
+    if config_path:
+        with open(config_path, 'rb') as f:
+            try:
+                config = shell.parse_json_in_str(f.read().decode('utf8'))
+            except ValueError as e:
+                sys.exit(1)
+    else:
+        config = {}
+
+    config['password'] = shell.to_bytes(config.get('password', b''))
+    config['method'] = shell.to_str(config.get('method', 'aes-256-cfb'))
+    config['port_password'] = config.get('port_password', None)
+    config['timeout'] = int(config.get('timeout', 300))
+    config['fast_open'] = config.get('fast_open', False)
+    config['workers'] = config.get('workers', 1)
+    config['pid-file'] = config.get('pid-file', '/var/run/shadowsocks.pid')
+    config['log-file'] = config.get('log-file', '/var/log/shadowsocks.log')
+    config['verbose'] = config.get('verbose', False)
+    config['local_address'] = shell.to_str(config.get('local_address', '127.0.0.1'))
+    config['local_port'] = config.get('local_port', 1080)
+    if is_local:
+        if config.get('server', None) is None:
+            shell.print_local_help()
+            sys.exit(2)
+        else:
+            config['server'] = shell.to_str(config['server'])
+    else:
+        config['server'] = shell.to_str(config.get('server', '0.0.0.0'))
+        try:
+            config['forbidden_ip'] = \
+                shell.IPNetwork(config.get('forbidden_ip', '127.0.0.0/8,::1/128'))
+        except Exception as e:
+            sys.exit(2)
+    config['server_port'] = config.get('server_port', 8388)
+
+    shell.check_config(config, is_local)
+
+    return config
 # 对base编码进行解码
 def base64decode(text):
     i = len(text) % 4
@@ -202,7 +261,7 @@ def get_home_dir():
 # 获取配置目录
 def get_config_dir():
     home_dir = get_home_dir()
-    config_dir = os.path.join(home_dir, '.ssr-command-client')
+    config_dir = os.path.join(home_dir, '.SSRClient')
     config_file_dir = os.path.join(config_dir, 'config.ini')
     lock_file_dir = os.path.join(config_dir, '.config.lock')
     return config_dir, config_file_dir, lock_file_dir
@@ -237,7 +296,7 @@ def download_ssr_source():
 def init_config_file():
     config_dir, config_file_dir, lock_file_dir = get_config_dir()
     server_json_file_path = os.path.join(config_dir, 'ssr-list.json')
-    config_json_file_path = os.path.join(config_dir, 'config.json')
+    config_json_file_path = os.path.join(config_dir, 'config.tpl.json')
     shadowsocksr_client_path = os.path.join(config_dir, 'shadowsocksr/shadowsocks/local.py')
     shadowsocksr_pid_file_path = os.path.join(config_dir, 'shadowsocksr.pid')
     shadowsocksr_log_file_path = os.path.join(config_dir, 'shadowsocksr.log')
