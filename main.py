@@ -2,7 +2,7 @@
 # coding=utf-8
 
 import argparse
-from SSRClient.funtions import *
+from funtions import *
 
 def get_parser():
     parser = argparse.ArgumentParser(description="The ssr command client based Python.")
